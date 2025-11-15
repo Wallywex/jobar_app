@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "67171801998",
+    "project_id": "jobar-157a7",
+    "storage_bucket": "jobar-157a7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:67171801998:android:e3bfd55d202300a72ea2df",
+        "android_client_info": {
+          "package_name": "com.example.jobar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4bChO6UJwA7ZufAr861E_bAthoItrVyU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
