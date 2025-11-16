@@ -76,7 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pop();      // Close register screen
         });
         return const AlertDialog(
-          title: Text('Success!'),
+          title: Icon(Icons.thumb_up),
           content: Text('Registration successful. Redirecting to login...'),
         );
       },

@@ -115,8 +115,7 @@ class AvailableJobsTab extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       // Listen to ALL jobs, ordered by when they were posted (newest first)
       stream: FirebaseFirestore.instance
-          .collection('jobs')
-          .orderBy('datePosted', descending: true)
+          .collection('jobs') .orderBy('datePosted', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -138,6 +137,7 @@ class AvailableJobsTab extends StatelessWidget {
             final jobId = jobDocs[index].id;
 
             return ListTile(
+              
               title: Text(jobData['title'] ?? 'No Title'),
               subtitle: Text(jobData['location'] ?? 'No Location'),
               trailing: Text(jobData['pay'] ?? 'No Pay'),

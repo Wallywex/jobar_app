@@ -11,8 +11,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
+final _formKey = GlobalKey<FormState>();
+bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on FirebaseAuthException catch (e) {
       // 3. This is our new, smarter error handling for login
-      String errorMessage = 'An unknown error occurred.';
+      String errorMessage = 'Check your internet and try again.';
       if (e.code == 'user-not-found' ||
           e.code == 'wrong-password' ||
           e.code == 'invalid-credential') {
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 100),
+                const SizedBox(height: 50),
                 Image.asset('lib/Images/Logo.png', height: 250, width: 250),
                 Text(
                   "Welcome Back!",
