@@ -4,12 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jobar_app/Screens/createJobScreen.dart';
 import 'package:jobar_app/Screens/jobDetailsScreen.dart';
 import 'package:jobar_app/Screens/loginscreen.dart';
+import 'package:jobar_app/Widgets/jobCard.dart';
 
 // Import the placeholder screens we just made
 // <-- Update your package name
 
 // Import your login screen to navigate back
- // <-- Update your package name
+// <-- Update your package name
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // This list holds the widgets for each tab
   static const List<Widget> _tabScreens = <Widget>[
     AvailableJobsTab(), // Our first tab
-    MyPostingsTab(),    // Our second tab
+    MyPostingsTab(), // Our second tab
   ];
 
   // This list holds the titles for the AppBar
@@ -43,9 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // This function navigates to the Create Job screen
   void _navigateToCreateJob(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => const CreateJobScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (ctx) => const CreateJobScreen()));
   }
 
   // This function logs the user out and returns to the Login screen
@@ -65,8 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         // The title changes based on the selected tab
-        title: Text(_tabTitles[_selectedIndex]),
-        backgroundColor: Colors.green, // Matching your style
+        title: Text('JOBAR', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white, // Matching your style
         actions: [
           // Add a logout button
           IconButton(
@@ -115,7 +117,8 @@ class AvailableJobsTab extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       // Listen to ALL jobs, ordered by when they were posted (newest first)
       stream: FirebaseFirestore.instance
-          .collection('jobs') .orderBy('datePosted', descending: true)
+          .collection('jobs')
+          .orderBy('datePosted', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -136,19 +139,15 @@ class AvailableJobsTab extends StatelessWidget {
             final jobData = jobDocs[index].data() as Map<String, dynamic>;
             final jobId = jobDocs[index].id;
 
-            return ListTile(
-              
-              title: Text(jobData['title'] ?? 'No Title'),
-              subtitle: Text(jobData['location'] ?? 'No Location'),
-              trailing: Text(jobData['pay'] ?? 'No Pay'),
+            return GestureDetector(
               onTap: () {
-                // Navigate to the details screen when tapped
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => JobDetailsScreen(jobId: jobId),
                   ),
                 );
               },
+              child: Jobcard(jobData: jobData),
             );
           },
         );
@@ -199,17 +198,15 @@ class MyPostingsTab extends StatelessWidget {
             final jobData = jobDocs[index].data() as Map<String, dynamic>;
             final jobId = jobDocs[index].id;
 
-            return ListTile(
-              title: Text(jobData['title'] ?? 'No Title'),
-              subtitle: Text(jobData['location'] ?? 'No Location'),
-              // We'll add edit/delete buttons here later
+            return GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (ctx) => JobDetailsScreen(jobId: jobId),
+                    builder: (context) => JobDetailsScreen(jobId: jobId),
                   ),
                 );
               },
+              child: Jobcard(jobData: jobData),
             );
           },
         );

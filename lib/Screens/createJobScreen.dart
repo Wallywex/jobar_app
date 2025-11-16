@@ -21,6 +21,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
   final _payController = TextEditingController(); // Renamed from 'budget'
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _contactPhoneController = TextEditingController();
 
   // --- 3. THE FUNCTION THAT DOES THE WORK ---
   Future<void> _postJob() async {
@@ -54,6 +55,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
         // --- CRITICAL FIELDS ---
         'postedBy': user.uid, // This links the job to the user!
         'datePosted': Timestamp.now(), // So we can sort by newest
+        'contactPhone' : _contactPhoneController.text.trim()
       };
 
       // --- 5. SAVE TO FIRESTORE ---
@@ -69,9 +71,9 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
       // Handle any errors
       print("Error posting job: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error posting job: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error posting job: $e')));
       }
     }
 
@@ -88,6 +90,7 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     _payController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
+    _contactPhoneController.dispose();
     super.dispose();
   }
 
@@ -125,17 +128,25 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green.shade900,
                       ),
-                      hintStyle:
-                          const TextStyle(fontSize: 18, color: Colors.black),
-                      suffixIcon:
-                          const Icon(Icons.work_outline, color: Colors.green),
+                      hintStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.work_outline,
+                        color: Colors.green,
+                      ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 3),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 3,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 2),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -160,17 +171,25 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green.shade900,
                       ),
-                      hintStyle:
-                          const TextStyle(fontSize: 18, color: Colors.black),
-                      suffixIcon:
-                          const Icon(Icons.attach_money, color: Colors.green),
+                      hintStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.attach_money,
+                        color: Colors.green,
+                      ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 3),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 3,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 2),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -195,17 +214,68 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green.shade900,
                       ),
-                      hintStyle:
-                          const TextStyle(fontSize: 18, color: Colors.black),
-                      suffixIcon:
-                          const Icon(Icons.location_on, color: Colors.green),
+                      hintStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.location_on,
+                        color: Colors.green,
+                      ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 3),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 3,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 2),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // ... after your Location TextFormField
+                  const SizedBox(height: 15),
+                  TextFormField(
+                    // --- ADD THIS NEW FIELD ---
+                    controller: _contactPhoneController,
+                    keyboardType: TextInputType.phone, // Use the phone keyboard
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a contact phone number.';
+                      }
+                      return null;
+                    },
+                    style: const TextStyle(fontSize: 18, color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: "Type phone number here..",
+                      labelText: "Contact Phone", // <-- NEW
+                      labelStyle: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade900,
+                      ),
+                      hintStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                      suffixIcon: const Icon(
+                        Icons.phone,
+                        color: Colors.green,
+                      ), // <-- NEW
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 3,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -230,15 +300,21 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green.shade900,
                       ),
-                      hintStyle:
-                          const TextStyle(fontSize: 18, color: Colors.black),
+                      hintStyle: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 3),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 3,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.green.shade900, width: 2),
+                        borderSide: BorderSide(
+                          color: Colors.green.shade900,
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
@@ -249,7 +325,9 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isLoading ? Colors.grey : Colors.green,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 15),
+                        horizontal: 50,
+                        vertical: 15,
+                      ),
                       textStyle: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
