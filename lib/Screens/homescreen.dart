@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jobar_app/Screens/createJobScreen.dart';
 import 'package:jobar_app/Screens/jobDetailsScreen.dart';
 import 'package:jobar_app/Screens/loginscreen.dart';
+import 'package:jobar_app/Widgets/emptyStateWidget.dart';
 import 'package:jobar_app/Widgets/jobCard.dart';
 
 // Import the placeholder screens we just made
@@ -20,6 +21,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // --- ADD THIS FUNCTION INSIDE _HomeScreenState ---
+
   // This tracks which tab is currently selected
   int _selectedIndex = 0;
 
@@ -62,26 +65,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    // We don't need the user name here anymore
+
     return Scaffold(
       appBar: AppBar(
-        // The title changes based on the selected tab
-        title: Text('JOBAR', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white, // Matching your style
+        // --- 1. CONTEXTUAL TITLE ---
+        // This will show "Available Jobs" or "My Job Postings"
+        title: Text(
+          _tabTitles[_selectedIndex],
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+
+        // --- 2. STYLING ---
+        backgroundColor: Colors.white, // Clean, modern look
+        foregroundColor: Colors.black, // Makes icons black
+        elevation: 0, // Flat design
+        // --- 3. UPDATED ACTIONS ---
         actions: [
-          // Add a logout button
+          // The new Profile Icon
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              size: 40,
+              color: Colors.green,
+            ),
+            tooltip: 'Profile',
+            onPressed: () {
+              // Later, we can build a ProfileScreen
+              // For now, it's a placeholder
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Profile screen coming soon!')),
+              );
+            },
+          ),
+
+          // The existing Logout Icon
+          IconButton(
+            icon: const Icon(Icons.logout_sharp, size: 30, color: Colors.green),
             onPressed: () => _logout(context),
             tooltip: 'Logout',
           ),
         ],
       ),
-      body: Center(
-        // Display the correct screen from our list
-        child: _tabScreens.elementAt(_selectedIndex),
-      ),
+      body: Center(child: _tabScreens.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -94,12 +126,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.green, // Matching your style
+        // Match your new purple theme
+        selectedItemColor: Colors.green,
         onTap: _onItemTapped,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToCreateJob(context),
+        // Match your new purple theme
         backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
         tooltip: 'Post a Job',
         child: const Icon(Icons.add),
       ),
@@ -187,30 +222,112 @@ class MyPostingsTab extends StatelessWidget {
           return const Center(child: Text('Something went wrong.'));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("You haven't posted any jobs yet."));
+          return EmptyStateWidget(icon: Icons.work_off, message: 'You haven\'t posted any jobs yet');
         }
 
         final jobDocs = snapshot.data!.docs;
 
         return ListView.builder(
           itemCount: jobDocs.length,
-          itemBuilder: (context, index) {
-            final jobData = jobDocs[index].data() as Map<String, dynamic>;
-            final jobId = jobDocs[index].id;
+          // Inside MyPostingsTab -> StreamBuilder -> ListView.builder
+          // Inside MyPostingsTab -> StreamBuilder -> ListView.builder
+itemBuilder: (context, index) {
+  final jobData = jobDocs[index].data() as Map<String, dynamic>;
+  final jobId = jobDocs[index].id;
 
-            return GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => JobDetailsScreen(jobId: jobId),
-                  ),
-                );
-              },
-              child: Jobcard(jobData: jobData),
-            );
-          },
+  // We are now using a Stack to overlay the menu
+  return Stack(
+    children: [
+      // 1. The main content (tappable card)
+      GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => JobDetailsScreen(jobId: jobId),
+            ),
+          );
+        },
+        child: Jobcard(jobData: jobData), // Your beautiful card
+      ),
+      
+      // 2. The menu button, aligned to the top right
+      Padding(
+        padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert), // The 3-dot icon
+            onSelected: (value) {
+              if (value == 'delete') {
+                _showDeleteDialog(context, jobId);
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'delete',
+                child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+},
         );
       },
+    );
+  }
+
+  // --- ADD THIS FUNCTION INSIDE _HomeScreenState ---
+
+  void _showDeleteDialog(BuildContext context, String jobId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Are you sure?'),
+        content: const Text('This will permanently delete your job posting.'),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            onPressed: () async {
+              try {
+                // The magic line: Tell Firestore to delete
+                await FirebaseFirestore.instance
+                    .collection('jobs')
+                    .doc(jobId)
+                    .delete();
+
+                // Close the dialog
+                Navigator.of(ctx).pop();
+
+                // Show a success message (optional, but good)
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Job deleted successfully.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                // Handle any errors
+                Navigator.of(ctx).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete job: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

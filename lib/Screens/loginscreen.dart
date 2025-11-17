@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:jobar_app/Screens/homescreen.dart';
 import 'package:jobar_app/Screens/registerscreen.dart';
+// Or your package name
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,17 +13,19 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-final _formKey = GlobalKey<FormState>();
-bool _isLoading = false;
+  // All our logic remains the same
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
+  bool _isPasswordVisible = false;
 
   Future<void> _signIn() async {
     final isValid = _formKey.currentState?.validate();
     if (isValid == null || !isValid) {
-      return; // Stop if validation fails
+      return;
     }
 
     setState(() {
@@ -34,29 +38,21 @@ bool _isLoading = false;
         password: _passwordController.text.trim(),
       );
 
-      // On success, navigate to the HomeScreen
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (ctx) => const HomeScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
-      // 3. This is our new, smarter error handling for login
-      String errorMessage = 'Check your internet and try again.';
-      if (e.code == 'user-not-found' ||
-          e.code == 'wrong-password' ||
-          e.code == 'invalid-credential') {
-        errorMessage = 'Invalid email or password. Please try again.';
-      } else if (e.code == 'invalid-email') {
+      String errorMessage = 'Invalid email or password. Please try again.';
+      if (e.code == 'invalid-email') {
         errorMessage = 'Please enter a valid email address.';
       }
-
       _showErrorDialog(errorMessage);
     } catch (e) {
       _showErrorDialog('An unknown error occurred.');
     }
 
-    // 4. Always turn off loading
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -69,15 +65,71 @@ bool _isLoading = false;
     if (!mounted) return;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Login Error'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
+      builder: (ctx) => Dialog(
+        // Use the same rounded shape
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Keep it compact
+            children: [
+              // 1. The Red Error Icon
+              const Icon(
+                Icons.error_outline, // A clear "error" icon
+                color: Colors.red,
+                size: 80,
+              ),
+              const SizedBox(height: 20),
+
+              // 2. The Title
+              const Text(
+                'Login Error',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // 3. The error message
+              Text(
+                message, // This is the message from Firebase
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 4. The "OK" button to dismiss
+              SizedBox(
+                width: double.infinity, // Make the button wide
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop(); // Just close the dialog
+                  },
+                  // Style it to match your "Create Account" button
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:  Colors.green, // Purple
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -89,133 +141,200 @@ bool _isLoading = false;
     super.dispose();
   }
 
+  // --- NEW BUILD METHOD ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 1. Light purple background
       backgroundColor: Colors.white,
-      // 5. Wrap your UI in a Form
-      body: Form(
-        key: _formKey, // Connect the key
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-
-          child: SingleChildScrollView(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 50),
-                Image.asset('lib/Images/Logo.png', height: 250, width: 250),
-                Text(
-                  "Welcome Back!",
+                Image.asset('lib/Images/Logo.png', height: 250, width: 250,),
+                // 2. "Sign in" Title
+                const Text(
+                  'Sign in',
                   style: TextStyle(
-                    fontSize: 30,
-                    fontFamily: "Roboto",
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 30),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    prefixIconColor: Colors.green,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                  // 6. Add validation logic
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email.';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return 'Please enter a valid email address.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock), // Changed from .person
-                    prefixIconColor: Colors.green,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                  // 7. Add validation logic
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your password.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 30),
-                GestureDetector(
-                  // 8. Disable button when loading
-                  onTap: _isLoading ? null : _signIn,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _isLoading ? Colors.grey : Colors.green,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    width: 400,
-                    height: 60,
-                    child: Center(
-                      // 9. Show spinner or text
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "LOGIN",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Forgot Password?",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-
+                const SizedBox(height: 8),
+        
+                // 3. "Don't have an account?" Text
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account?"),
+                    const Text(
+                      "Don't have an account?",
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
                     TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (ctx) => const RegisterScreen(),
-                                ),
-                              );
-                            },
-                      child: Text(
-                        'Register Now',
+                      onPressed: () {
+                        // Go to the Register screen
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Sign up',
                         style: TextStyle(
-                          color: Colors.green,
+                          color: Colors.green, // Purple
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
+        
+                // 4. The Form in a white card
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green[100],
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // --- Email Field ---
+                        _buildFormLabel('Email'),
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: _buildInputDecoration(
+                            hint: 'Enter your email',
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter your email.';
+                            }
+                            return null; // Basic check
+                          },
+                        ),
+                        const SizedBox(height: 16),
+        
+                        // --- Password Field ---
+                        _buildFormLabel('Password'),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: !_isPasswordVisible,
+                          decoration: _buildInputDecoration(
+                            hint: 'Enter your password',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter your password.';
+                            }
+                            return null;
+                          },
+                        ),
+                        // "Forgot Password" would go here if you add it
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+        
+                // 5. "Sign in" Button
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _signIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:  Colors.green, // Purple
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: SpinKitCircle(
+                      color: Colors.white,
+                      size: 24,
+                    )
+                        )
+                      : const Text("Sign in"),
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // --- HELPER for the form field labels ---
+  Widget _buildFormLabel(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  // --- HELPER for InputDecoration ---
+  InputDecoration _buildInputDecoration({
+    required String hint,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade500),
+      suffixIcon: suffixIcon,
+      fillColor: Colors.white,
+      filled: true,
+      contentPadding: const EdgeInsets.symmetric(
+        vertical: 16.0,
+        horizontal: 12.0,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: BorderSide(color: Colors.grey.shade400, width: 0.0),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: BorderSide(color: Colors.grey.shade300, width: 1.0),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.0),
+        borderSide: const BorderSide(color: Color(0xFF8E24AA), width: 2),
       ),
     );
   }

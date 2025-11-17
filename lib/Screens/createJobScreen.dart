@@ -1,8 +1,8 @@
-// --- NEW IMPORTS ---
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// ---------------------
 import 'package:flutter/material.dart';
+import 'package:jobar_app/Widgets/buildTextField.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class CreateJobScreen extends StatefulWidget {
   const CreateJobScreen({super.key});
@@ -12,78 +12,64 @@ class CreateJobScreen extends StatefulWidget {
 }
 
 class _CreateJobScreenState extends State<CreateJobScreen> {
-  // --- 1. ADD THE FORM KEY AND LOADING STATE ---
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // --- 2. ADD TEXT EDITING CONTROLLERS ---
   final _titleController = TextEditingController();
-  final _payController = TextEditingController(); // Renamed from 'budget'
+  final _payController = TextEditingController();
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _contactPhoneController = TextEditingController();
 
-  // --- 3. THE FUNCTION THAT DOES THE WORK ---
   Future<void> _postJob() async {
-    // First, validate the form
-    final isValid = _formKey.currentState?.validate();
-    if (isValid == null || !isValid) {
-      return; // Stop if form is invalid
-    }
-
-    // Get the current user (we MUST know who is posting)
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // This should never happen if they're on this screen, but just in case
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to post.')),
-      );
+    final _isValid = _formKey.currentState?.validate();
+    if (_isValid == null || !_isValid) {
       return;
     }
 
-    // Set loading state
-    setState(() => _isLoading = true);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("You must be logged in to post")));
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      // --- 4. CREATE THE JOB DATA ---
-      // This is a Map, which is how Firestore stores data (like JSON)
       final Map<String, dynamic> jobData = {
         'title': _titleController.text.trim(),
         'pay': _payController.text.trim(),
         'location': _locationController.text.trim(),
         'description': _descriptionController.text.trim(),
-        // --- CRITICAL FIELDS ---
-        'postedBy': user.uid, // This links the job to the user!
-        'datePosted': Timestamp.now(), // So we can sort by newest
-        'contactPhone' : _contactPhoneController.text.trim()
+        'contactPhone': _contactPhoneController.text.trim(),
+        'postedBy': user.uid,
+        'datePosted': Timestamp.now(),
       };
-
-      // --- 5. SAVE TO FIRESTORE ---
-      // Go to the 'jobs' collection and add a new document
       await FirebaseFirestore.instance.collection('jobs').add(jobData);
 
-      // If we get here, it worked!
       if (mounted) {
-        // Close this screen and go back to the HomeScreen
         Navigator.of(context).pop();
       }
     } catch (e) {
-      // Handle any errors
-      print("Error posting job: $e");
+      print("Error Posting Job : $e");
+
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error posting job: $e')));
+        ).showSnackBar(SnackBar(content: Text("Error Posting Job : $e")));
       }
     }
 
-    // Always turn off loading, even if it fails
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  // --- 6. CLEAN UP CONTROLLERS ---
   @override
   void dispose() {
     _titleController.dispose();
@@ -94,251 +80,138 @@ class _CreateJobScreenState extends State<CreateJobScreen> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Upload a new job")),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 50.0),
-        // --- 7. CONNECT THE FORM KEY ---
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 25.0, right: 25.0),
-              child: Column(
-                children: [
-                  TextFormField(
-                    // --- 8. CONNECT CONTROLLER & VALIDATOR ---
-                    controller: _titleController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a job title.';
-                      }
-                      return null;
-                    },
-                    // (Your beautiful styling)
-                    style: const TextStyle(fontSize: 18, color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Type job title here..",
-                      labelText: "Job Title",
-                      // ... rest of your style
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade900,
-                      ),
-                      hintStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.work_outline,
-                        color: Colors.green,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 3,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 2,
-                        ),
-                      ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+
+        title: Text(
+          "Post a New Job",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // JOB TITLE
+                Buildtextfield(
+                  controller: _titleController,
+                  hint: 'e.g Driver for a Day',
+                  icon: Icons.work_outline,
+                  label: 'Job Title',
+
+                  maxLines: 1,
+                  keyBoard: TextInputType.name,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a job title';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+
+                // PAY
+                Buildtextfield(
+                  controller: _payController,
+                  hint: 'e.g ₦15000',
+                  icon: Icons.attach_money_outlined,
+                  label: 'Pay',
+
+                  maxLines: 1,
+                  keyBoard: TextInputType.numberWithOptions(),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter the pay';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+
+                // Location
+                Buildtextfield(
+                  controller: _locationController,
+                  hint: 'e.g Lekki Phase 1',
+                  icon: Icons.location_on_outlined,
+                  label: 'Location',
+
+                  maxLines: 1,
+                  keyBoard: TextInputType.name,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a job title';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                Buildtextfield(
+                  controller: _contactPhoneController,
+                  hint: 'e.g +234 816 792 5941',
+                  icon: Icons.phone,
+                  label: 'Contact Phone',
+
+                  maxLines: 1,
+                  keyBoard: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a contact Phone';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                Buildtextfield(
+                  controller: _descriptionController,
+                  hint:
+                      'Describe the job requirements, responsibilities, and any other important details...',
+                  icon: Icons.description_outlined,
+                  label: 'Full Description',
+
+                  maxLines: 5,
+                  keyBoard: TextInputType.name,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a job description';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _postJob,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(12)
                     ),
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold
+                    )
                   ),
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    // --- 8. CONNECT CONTROLLER & VALIDATOR ---
-                    controller: _payController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter the pay/budget.';
-                      }
-                      return null;
-                    },
-                    // (Your beautiful styling)
-                    style: const TextStyle(fontSize: 18, color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Type payment here..",
-                      labelText: "Budget",
-                      // ... rest of your style
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade900,
-                      ),
-                      hintStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.attach_money,
-                        color: Colors.green,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 3,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    // --- 8. CONNECT CONTROLLER & VALIDATOR ---
-                    controller: _locationController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a location.';
-                      }
-                      return null;
-                    },
-                    // (Your beautiful styling)
-                    style: const TextStyle(fontSize: 18, color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Type location here..",
-                      labelText: "Location",
-                      // ... rest of your style
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade900,
-                      ),
-                      hintStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.location_on,
-                        color: Colors.green,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 3,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // ... after your Location TextFormField
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    // --- ADD THIS NEW FIELD ---
-                    controller: _contactPhoneController,
-                    keyboardType: TextInputType.phone, // Use the phone keyboard
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a contact phone number.';
-                      }
-                      return null;
-                    },
-                    style: const TextStyle(fontSize: 18, color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Type phone number here..",
-                      labelText: "Contact Phone", // <-- NEW
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade900,
-                      ),
-                      hintStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.phone,
-                        color: Colors.green,
-                      ), // <-- NEW
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 3,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  TextFormField(
-                    // --- 8. CONNECT CONTROLLER & VALIDATOR ---
-                    controller: _descriptionController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a description.';
-                      }
-                      return null;
-                    },
-                    maxLength: 100, // You can change/remove this
-                    maxLines: 5,
-                    style: const TextStyle(fontSize: 18, color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Type full description here..",
-                      // ... rest of your style
-                      labelStyle: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade900,
-                      ),
-                      hintStyle: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 3,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.green.shade900,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    // --- 9. CONNECT ONPRESSED AND LOADING STATE ---
-                    onPressed: _isLoading ? null : _postJob,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isLoading ? Colors.grey : Colors.green,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 50,
-                        vertical: 15,
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Post Job"),
-                  ),
-                ],
-              ),
+                  child: _isLoading
+                  ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: SpinKitCircle(
+                      color: Colors.white,
+                      size: 24,
+                    ) 
+                    ,
+                  )
+                  : Text('Post Job')
+                ),
+              ],
             ),
           ),
         ),
