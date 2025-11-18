@@ -60,30 +60,30 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Our reusable error dialog
+  
   void _showErrorDialog(String message) {
     if (!mounted) return;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        // Use the same rounded shape
+        
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Keep it compact
+            mainAxisSize: MainAxisSize.min, 
             children: [
-              // 1. The Red Error Icon
+              
               const Icon(
-                Icons.error_outline, // A clear "error" icon
+                Icons.error_outline, 
                 color: Colors.red,
                 size: 80,
               ),
               const SizedBox(height: 20),
 
-              // 2. The Title
+              
               const Text(
                 'Login Error',
                 textAlign: TextAlign.center,
@@ -94,9 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
 
-              // 3. The error message
+              
               Text(
-                message, // This is the message from Firebase
+                message, 
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -105,12 +105,12 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 4. The "OK" button to dismiss
+              
               SizedBox(
-                width: double.infinity, // Make the button wide
+                width: double.infinity, 
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(ctx).pop(); // Just close the dialog
+                    Navigator.of(ctx).pop();
                   },
                   // Style it to match your "Create Account" button
                   style: ElevatedButton.styleFrom(
@@ -141,11 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // --- NEW BUILD METHOD ---
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 1. Light purple background
+    
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
         
-                // 3. "Don't have an account?" Text
+                
                 Row(
                   children: [
                     const Text(
@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
         
-                // 4. The Form in a white card
+                
                 Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
@@ -208,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // --- Email Field ---
+                        
                         _buildFormLabel('Email'),
                         TextFormField(
                           controller: _emailController,
@@ -225,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
         
-                        // --- Password Field ---
+                        
                         _buildFormLabel('Password'),
                         TextFormField(
                           controller: _passwordController,
@@ -253,14 +253,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                         ),
-                        // "Forgot Password" would go here if you add it
+                        
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
         
-                // 5. "Sign in" Button
+                
                 ElevatedButton(
                   onPressed: _isLoading ? null : _signIn,
                   style: ElevatedButton.styleFrom(
@@ -294,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- HELPER for the form field labels ---
+
   Widget _buildFormLabel(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -309,7 +309,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- HELPER for InputDecoration ---
+  
   InputDecoration _buildInputDecoration({
     required String hint,
     Widget? suffixIcon,

@@ -234,7 +234,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       children: [
         Icon(icon, color: iconColor),
         const SizedBox(width: 12),
-        Expanded( // Use Expanded to prevent overflow
+        Expanded( 
           child: Text(
             text,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),

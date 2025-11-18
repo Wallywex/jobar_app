@@ -10,11 +10,11 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // 1. Add Form Key and loading state
+  
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // 2. Add new controllers for Name and Confirm Password
+  
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -24,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isPasswordVisible = false; // For the eye icon
 
   Future<void> _signUp() async {
-    // 3. Validate the form first
+    
     final isValid = _formKey.currentState?.validate();
     if (isValid == null || !isValid) {
       return; // Stop if validation fails
@@ -35,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      // 4. Create the user
+     
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -75,22 +75,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  // The success dialog you wanted
-  // The success dialog you wanted
+  
   void _showSuccessDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // User can't click away
+      barrierDismissible: false, 
       builder: (dialogContext) {
-        // The 3-second timer is the same
+        
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.of(dialogContext).pop(); // Close dialog
           Navigator.of(context).pop(); // Close register screen
         });
 
-        // --- THIS IS THE NEW UI ---
+       
         return Dialog(
-          // Give it the same rounded corners as your form
+          
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
@@ -99,11 +98,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min, // Keeps the dialog compact
               children: [
-                // 1. The Green Checkmark
+                
                 const Icon(
-                  Icons.check_circle_outline, // Or Icons.check_circle
+                  Icons.check_circle_outline, 
                   color: Colors.green,
-                  size: 80, // Make it big
+                  size: 80, 
                 ),
                 const SizedBox(height: 20),
 
@@ -129,8 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Our reusable error dialog
-  // Our reusable error dialog
+  
   void _showErrorDialog(String message) {
     if (!mounted) return;
     showDialog(
@@ -161,22 +159,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
 
-              // 3. The error message
+              
               Text(
-                message, // This is the message from Firebase
+                message, 
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
 
-              // 4. The "OK" button to dismiss
+             
               SizedBox(
-                width: double.infinity, // Make the button wide
+                width: double.infinity, 
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(ctx).pop(); // Just close the dialog
                   },
-                  // Style it to match your "Create Account" button
+                  
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green, // Purple
                     foregroundColor: Colors.white,
@@ -211,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 1. Light purple background from your design
+      
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -258,7 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 4. The Form in a white card
+                
                 Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
@@ -270,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // --- Name Field ---
+                        
                         _buildFormLabel('Name'),
                         TextFormField(
                           controller: _nameController,
@@ -286,7 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // --- Email Field ---
+                        
                         _buildFormLabel('Email'),
                         TextFormField(
                           controller: _emailController,
@@ -306,7 +304,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // --- Password Field ---
+                        
                         _buildFormLabel('Password'),
                         TextFormField(
                           controller: _passwordController,
@@ -339,7 +337,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // --- Confirm Password Field (User Request) ---
+                      
                         _buildFormLabel('Confirm Password'),
                         TextFormField(
                           controller: _confirmPasswordController,
@@ -363,7 +361,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 5. "Create Account" Button
+                // "Create Account" Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
@@ -395,7 +393,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // --- HELPER for the form field labels ---
+  // 
   Widget _buildFormLabel(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -410,7 +408,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // --- HELPER for InputDecoration ---
+  
   InputDecoration _buildInputDecoration({
     required String hint,
     Widget? suffixIcon,
